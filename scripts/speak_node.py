@@ -16,7 +16,7 @@ from time import sleep
 def on_say(msg):
     publisher.publish("start_speaking")
     sleep(0.5)
-    call(["espeak", msg.data])
+    call(["espeak", "-v", "english-us", "-s", "140", "-p", "80", "-g", "2", msg.data])
     publisher.publish("done_speaking")
 
 # Intializes everything
