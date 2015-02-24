@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import pyaudio
 
 p = pyaudio.PyAudio()
