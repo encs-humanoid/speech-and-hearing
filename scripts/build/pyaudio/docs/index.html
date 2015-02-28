@@ -1,0 +1,1183 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyAudio Documentation &mdash; PyAudio 0.2.8 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.2.8',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyAudio 0.2.8 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">PyAudio 0.2.8 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+          <div class="body">
+            
+  <div class="section" id="pyaudio-documentation">
+<h1><a class="toc-backref" href="#id1">PyAudio Documentation</a><a class="headerlink" href="#pyaudio-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#pyaudio-documentation" id="id1">PyAudio Documentation</a><ul>
+<li><a class="reference internal" href="#module-pyaudio" id="id2">Introduction</a><ul>
+<li><a class="reference internal" href="#example-blocking-mode-audio-i-o" id="id3">Example: Blocking Mode Audio I/O</a></li>
+<li><a class="reference internal" href="#example-callback-mode-audio-i-o" id="id4">Example: Callback Mode Audio I/O</a></li>
+<li><a class="reference internal" href="#overview" id="id5">Overview</a></li>
+<li><a class="reference internal" href="#details" id="id6">Details</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#class-pyaudio" id="id7">Class PyAudio</a></li>
+<li><a class="reference internal" href="#class-stream" id="id8">Class Stream</a></li>
+<li><a class="reference internal" href="#platform-specific" id="id9">Platform Specific</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables" id="id10">Indices and tables</a></li>
+</ul>
+</div>
+<div class="section" id="module-pyaudio">
+<span id="introduction"></span><h2><a class="toc-backref" href="#id2">Introduction</a><a class="headerlink" href="#module-pyaudio" title="Permalink to this headline">¶</a></h2>
+<p>PyAudio provides Python bindings for PortAudio, the cross-platform
+audio I/O library. With PyAudio, you can easily use Python to play and
+record audio on a variety of platforms.  PyAudio is inspired by:</p>
+<ul class="simple">
+<li>pyPortAudio/fastaudio: Python bindings for PortAudio v18 API.</li>
+<li>tkSnack: cross-platform sound toolkit for Tcl/Tk and Python.</li>
+</ul>
+<div class="section" id="example-blocking-mode-audio-i-o">
+<h3><a class="toc-backref" href="#id3">Example: Blocking Mode Audio I/O</a><a class="headerlink" href="#example-blocking-mode-audio-i-o" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;PyAudio Example: Play a wave file.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pyaudio</span>
+<span class="kn">import</span> <span class="nn">wave</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">CHUNK</span> <span class="o">=</span> <span class="mi">1024</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Plays a wave file.</span><span class="se">\n\n</span><span class="s">Usage: </span><span class="si">%s</span><span class="s"> filename.wav&quot;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">wf</span> <span class="o">=</span> <span class="n">wave</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span>
+
+<span class="c"># instantiate PyAudio (1)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">pyaudio</span><span class="o">.</span><span class="n">PyAudio</span><span class="p">()</span>
+
+<span class="c"># open stream (2)</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">get_format_from_width</span><span class="p">(</span><span class="n">wf</span><span class="o">.</span><span class="n">getsampwidth</span><span class="p">()),</span>
+                <span class="n">channels</span><span class="o">=</span><span class="n">wf</span><span class="o">.</span><span class="n">getnchannels</span><span class="p">(),</span>
+                <span class="n">rate</span><span class="o">=</span><span class="n">wf</span><span class="o">.</span><span class="n">getframerate</span><span class="p">(),</span>
+                <span class="n">output</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c"># read data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">readframes</span><span class="p">(</span><span class="n">CHUNK</span><span class="p">)</span>
+
+<span class="c"># play stream (3)</span>
+<span class="k">while</span> <span class="n">data</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">readframes</span><span class="p">(</span><span class="n">CHUNK</span><span class="p">)</span>
+
+<span class="c"># stop stream (4)</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">stop_stream</span><span class="p">()</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c"># close PyAudio (5)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To use PyAudio, first instantiate PyAudio using
+<a class="reference internal" href="#pyaudio.PyAudio" title="pyaudio.PyAudio"><tt class="xref py py-func docutils literal"><span class="pre">pyaudio.PyAudio()</span></tt></a> (1), which sets up the portaudio system.</p>
+<p>To record or play audio, open a stream on the desired device with the
+desired audio parameters using <a class="reference internal" href="#pyaudio.PyAudio.open" title="pyaudio.PyAudio.open"><tt class="xref py py-func docutils literal"><span class="pre">pyaudio.PyAudio.open()</span></tt></a>
+(2). This sets up a <a class="reference internal" href="#pyaudio.Stream" title="pyaudio.Stream"><tt class="xref py py-class docutils literal"><span class="pre">pyaudio.Stream</span></tt></a> to play or record
+audio.</p>
+<p>Play audio by writing audio data to the stream using
+<a class="reference internal" href="#pyaudio.Stream.write" title="pyaudio.Stream.write"><tt class="xref py py-func docutils literal"><span class="pre">pyaudio.Stream.write()</span></tt></a>, or read audio data from the stream
+using <a class="reference internal" href="#pyaudio.Stream.read" title="pyaudio.Stream.read"><tt class="xref py py-func docutils literal"><span class="pre">pyaudio.Stream.read()</span></tt></a>. (3)</p>
+<p>Note that in &#8220;blocking mode&#8221;, each <a class="reference internal" href="#pyaudio.Stream.write" title="pyaudio.Stream.write"><tt class="xref py py-func docutils literal"><span class="pre">pyaudio.Stream.write()</span></tt></a> or
+<a class="reference internal" href="#pyaudio.Stream.read" title="pyaudio.Stream.read"><tt class="xref py py-func docutils literal"><span class="pre">pyaudio.Stream.read()</span></tt></a> blocks until all the given/requested
+frames have been played/recorded.  Alternatively, to generate audio
+data on the fly or immediately process recorded audio data, use the
+&#8220;callback mode&#8221; outlined below.</p>
+<p>Use <a class="reference internal" href="#pyaudio.Stream.stop_stream" title="pyaudio.Stream.stop_stream"><tt class="xref py py-func docutils literal"><span class="pre">pyaudio.Stream.stop_stream()</span></tt></a> to pause playing/recording,
+and <a class="reference internal" href="#pyaudio.Stream.close" title="pyaudio.Stream.close"><tt class="xref py py-func docutils literal"><span class="pre">pyaudio.Stream.close()</span></tt></a> to terminate the stream. (4)</p>
+<p>Finally, terminate the portaudio session using
+<a class="reference internal" href="#pyaudio.PyAudio.terminate" title="pyaudio.PyAudio.terminate"><tt class="xref py py-func docutils literal"><span class="pre">pyaudio.PyAudio.terminate()</span></tt></a> (5)</p>
+</div>
+<div class="section" id="example-callback-mode-audio-i-o">
+<h3><a class="toc-backref" href="#id4">Example: Callback Mode Audio I/O</a><a class="headerlink" href="#example-callback-mode-audio-i-o" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;PyAudio Example: Play a wave file (callback version).&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pyaudio</span>
+<span class="kn">import</span> <span class="nn">wave</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Plays a wave file.</span><span class="se">\n\n</span><span class="s">Usage: </span><span class="si">%s</span><span class="s"> filename.wav&quot;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">wf</span> <span class="o">=</span> <span class="n">wave</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span>
+
+<span class="c"># instantiate PyAudio (1)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">pyaudio</span><span class="o">.</span><span class="n">PyAudio</span><span class="p">()</span>
+
+<span class="c"># define callback (2)</span>
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">in_data</span><span class="p">,</span> <span class="n">frame_count</span><span class="p">,</span> <span class="n">time_info</span><span class="p">,</span> <span class="n">status</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">readframes</span><span class="p">(</span><span class="n">frame_count</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pyaudio</span><span class="o">.</span><span class="n">paContinue</span><span class="p">)</span>
+
+<span class="c"># open stream using callback (3)</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">get_format_from_width</span><span class="p">(</span><span class="n">wf</span><span class="o">.</span><span class="n">getsampwidth</span><span class="p">()),</span>
+                <span class="n">channels</span><span class="o">=</span><span class="n">wf</span><span class="o">.</span><span class="n">getnchannels</span><span class="p">(),</span>
+                <span class="n">rate</span><span class="o">=</span><span class="n">wf</span><span class="o">.</span><span class="n">getframerate</span><span class="p">(),</span>
+                <span class="n">output</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                <span class="n">stream_callback</span><span class="o">=</span><span class="n">callback</span><span class="p">)</span>
+
+<span class="c"># start the stream (4)</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">start_stream</span><span class="p">()</span>
+
+<span class="c"># wait for stream to finish (5)</span>
+<span class="k">while</span> <span class="n">stream</span><span class="o">.</span><span class="n">is_active</span><span class="p">():</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+<span class="c"># stop stream (6)</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">stop_stream</span><span class="p">()</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="n">wf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c"># close PyAudio (7)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In callback mode, PyAudio will call a specified callback function (2)
+whenever it needs new audio data (to play) and/or when there is new
+(recorded) audio data available.  Note that PyAudio calls the callback
+function in a separate thread.  The function has the following
+signature <tt class="docutils literal"><span class="pre">callback(&lt;input_data&gt;,</span> <span class="pre">&lt;frame_count&gt;,</span> <span class="pre">&lt;time_info&gt;,</span>
+<span class="pre">&lt;status_flag&gt;)</span></tt> and must return a tuple containing <tt class="docutils literal"><span class="pre">frame_count</span></tt>
+frames of audio data and a flag signifying whether there are more
+frames to play/record.</p>
+<p>Start processing the audio stream using
+<a class="reference internal" href="#pyaudio.Stream.start_stream" title="pyaudio.Stream.start_stream"><tt class="xref py py-func docutils literal"><span class="pre">pyaudio.Stream.start_stream()</span></tt></a> (4), which will call the
+callback function repeatedly until that function returns
+<a class="reference internal" href="#pyaudio.paComplete" title="pyaudio.paComplete"><tt class="xref py py-data docutils literal"><span class="pre">pyaudio.paComplete</span></tt></a>.</p>
+<p>To keep the stream active, the main thread must not terminate, e.g.,
+by sleeping (5).</p>
+</div>
+<div class="section" id="overview">
+<h3><a class="toc-backref" href="#id5">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><strong>Classes</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.PyAudio" title="pyaudio.PyAudio"><tt class="xref py py-class docutils literal"><span class="pre">PyAudio</span></tt></a>, <a class="reference internal" href="#pyaudio.Stream" title="pyaudio.Stream"><tt class="xref py py-class docutils literal"><span class="pre">Stream</span></tt></a></dd>
+</dl>
+<dl class="docutils">
+<dt><strong>Stream Conversion Convenience Functions</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.get_sample_size" title="pyaudio.get_sample_size"><tt class="xref py py-func docutils literal"><span class="pre">get_sample_size()</span></tt></a>, <a class="reference internal" href="#pyaudio.get_format_from_width" title="pyaudio.get_format_from_width"><tt class="xref py py-func docutils literal"><span class="pre">get_format_from_width()</span></tt></a></dd>
+<dt><strong>PortAudio version</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.get_portaudio_version" title="pyaudio.get_portaudio_version"><tt class="xref py py-func docutils literal"><span class="pre">get_portaudio_version()</span></tt></a>, <a class="reference internal" href="#pyaudio.get_portaudio_version_text" title="pyaudio.get_portaudio_version_text"><tt class="xref py py-func docutils literal"><span class="pre">get_portaudio_version_text()</span></tt></a></dd>
+</dl>
+<dl class="docutils" id="pasampleformat">
+<dt><strong>Portaudio Sample Formats</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.paFloat32" title="pyaudio.paFloat32"><tt class="xref py py-data docutils literal"><span class="pre">paFloat32</span></tt></a>, <a class="reference internal" href="#pyaudio.paInt32" title="pyaudio.paInt32"><tt class="xref py py-data docutils literal"><span class="pre">paInt32</span></tt></a>, <a class="reference internal" href="#pyaudio.paInt24" title="pyaudio.paInt24"><tt class="xref py py-data docutils literal"><span class="pre">paInt24</span></tt></a>,
+<a class="reference internal" href="#pyaudio.paInt16" title="pyaudio.paInt16"><tt class="xref py py-data docutils literal"><span class="pre">paInt16</span></tt></a>, <a class="reference internal" href="#pyaudio.paInt8" title="pyaudio.paInt8"><tt class="xref py py-data docutils literal"><span class="pre">paInt8</span></tt></a>, <a class="reference internal" href="#pyaudio.paUInt8" title="pyaudio.paUInt8"><tt class="xref py py-data docutils literal"><span class="pre">paUInt8</span></tt></a>,
+<a class="reference internal" href="#pyaudio.paCustomFormat" title="pyaudio.paCustomFormat"><tt class="xref py py-data docutils literal"><span class="pre">paCustomFormat</span></tt></a></dd>
+</dl>
+<dl class="docutils" id="pahostapi">
+<dt><strong>PortAudio Host APIs</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.paInDevelopment" title="pyaudio.paInDevelopment"><tt class="xref py py-data docutils literal"><span class="pre">paInDevelopment</span></tt></a>, <a class="reference internal" href="#pyaudio.paDirectSound" title="pyaudio.paDirectSound"><tt class="xref py py-data docutils literal"><span class="pre">paDirectSound</span></tt></a>, <a class="reference internal" href="#pyaudio.paMME" title="pyaudio.paMME"><tt class="xref py py-data docutils literal"><span class="pre">paMME</span></tt></a>,
+<a class="reference internal" href="#pyaudio.paASIO" title="pyaudio.paASIO"><tt class="xref py py-data docutils literal"><span class="pre">paASIO</span></tt></a>, <a class="reference internal" href="#pyaudio.paSoundManager" title="pyaudio.paSoundManager"><tt class="xref py py-data docutils literal"><span class="pre">paSoundManager</span></tt></a>, <a class="reference internal" href="#pyaudio.paCoreAudio" title="pyaudio.paCoreAudio"><tt class="xref py py-data docutils literal"><span class="pre">paCoreAudio</span></tt></a>,
+<a class="reference internal" href="#pyaudio.paOSS" title="pyaudio.paOSS"><tt class="xref py py-data docutils literal"><span class="pre">paOSS</span></tt></a>, <a class="reference internal" href="#pyaudio.paALSA" title="pyaudio.paALSA"><tt class="xref py py-data docutils literal"><span class="pre">paALSA</span></tt></a>, <a class="reference internal" href="#pyaudio.paAL" title="pyaudio.paAL"><tt class="xref py py-data docutils literal"><span class="pre">paAL</span></tt></a>, <a class="reference internal" href="#pyaudio.paBeOS" title="pyaudio.paBeOS"><tt class="xref py py-data docutils literal"><span class="pre">paBeOS</span></tt></a>,
+<a class="reference internal" href="#pyaudio.paWDMKS" title="pyaudio.paWDMKS"><tt class="xref py py-data docutils literal"><span class="pre">paWDMKS</span></tt></a>, <a class="reference internal" href="#pyaudio.paJACK" title="pyaudio.paJACK"><tt class="xref py py-data docutils literal"><span class="pre">paJACK</span></tt></a>, <a class="reference internal" href="#pyaudio.paWASAPI" title="pyaudio.paWASAPI"><tt class="xref py py-data docutils literal"><span class="pre">paWASAPI</span></tt></a>,
+<a class="reference internal" href="#pyaudio.paNoDevice" title="pyaudio.paNoDevice"><tt class="xref py py-data docutils literal"><span class="pre">paNoDevice</span></tt></a></dd>
+</dl>
+<dl class="docutils" id="paerrorcode">
+<dt><strong>PortAudio Error Codes</strong></dt>
+<dd><tt class="xref py py-data docutils literal"><span class="pre">paNoError</span></tt>, <tt class="xref py py-data docutils literal"><span class="pre">paNotInitialized</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paUnanticipatedHostError</span></tt>, <tt class="xref py py-data docutils literal"><span class="pre">paInvalidChannelCount</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paInvalidSampleRate</span></tt>, <tt class="xref py py-data docutils literal"><span class="pre">paInvalidDevice</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paInvalidFlag</span></tt>, <tt class="xref py py-data docutils literal"><span class="pre">paSampleFormatNotSupported</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paBadIODeviceCombination</span></tt>, <tt class="xref py py-data docutils literal"><span class="pre">paInsufficientMemory</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paBufferTooBig</span></tt>, <tt class="xref py py-data docutils literal"><span class="pre">paBufferTooSmall</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paNullCallback</span></tt>, <tt class="xref py py-data docutils literal"><span class="pre">paBadStreamPtr</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paTimedOut</span></tt>, <tt class="xref py py-data docutils literal"><span class="pre">paInternalError</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paDeviceUnavailable</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paIncompatibleHostApiSpecificStreamInfo</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paStreamIsStopped</span></tt>, <tt class="xref py py-data docutils literal"><span class="pre">paStreamIsNotStopped</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paInputOverflowed</span></tt>, <tt class="xref py py-data docutils literal"><span class="pre">paOutputUnderflowed</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paHostApiNotFound</span></tt>, <tt class="xref py py-data docutils literal"><span class="pre">paInvalidHostApi</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paCanNotReadFromACallbackStream</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paCanNotWriteToACallbackStream</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paCanNotReadFromAnOutputOnlyStream</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paCanNotWriteToAnInputOnlyStream</span></tt>,
+<tt class="xref py py-data docutils literal"><span class="pre">paIncompatibleStreamHostApi</span></tt></dd>
+</dl>
+<dl class="docutils" id="pacallbackreturncodes">
+<dt><strong>PortAudio Callback Return Codes</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.paContinue" title="pyaudio.paContinue"><tt class="xref py py-data docutils literal"><span class="pre">paContinue</span></tt></a>, <a class="reference internal" href="#pyaudio.paComplete" title="pyaudio.paComplete"><tt class="xref py py-data docutils literal"><span class="pre">paComplete</span></tt></a>, <a class="reference internal" href="#pyaudio.paAbort" title="pyaudio.paAbort"><tt class="xref py py-data docutils literal"><span class="pre">paAbort</span></tt></a></dd>
+</dl>
+<dl class="docutils" id="pacallbackflags">
+<dt><strong>PortAudio Callback Flags</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.paInputUnderflow" title="pyaudio.paInputUnderflow"><tt class="xref py py-data docutils literal"><span class="pre">paInputUnderflow</span></tt></a>, <a class="reference internal" href="#pyaudio.paInputOverflow" title="pyaudio.paInputOverflow"><tt class="xref py py-data docutils literal"><span class="pre">paInputOverflow</span></tt></a>,
+<a class="reference internal" href="#pyaudio.paOutputUnderflow" title="pyaudio.paOutputUnderflow"><tt class="xref py py-data docutils literal"><span class="pre">paOutputUnderflow</span></tt></a>, <a class="reference internal" href="#pyaudio.paOutputOverflow" title="pyaudio.paOutputOverflow"><tt class="xref py py-data docutils literal"><span class="pre">paOutputOverflow</span></tt></a>,
+<a class="reference internal" href="#pyaudio.paPrimingOutput" title="pyaudio.paPrimingOutput"><tt class="xref py py-data docutils literal"><span class="pre">paPrimingOutput</span></tt></a></dd>
+</dl>
+</div>
+<div class="section" id="details">
+<h3><a class="toc-backref" href="#id6">Details</a><a class="headerlink" href="#details" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="pyaudio.get_format_from_width">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">get_format_from_width</tt><big>(</big><em>width</em>, <em>unsigned=True</em><big>)</big><a class="headerlink" href="#pyaudio.get_format_from_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a PortAudio format constant for the specified <em>width</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>width</strong> &#8211; The desired sample width in bytes (1, 2, 3, or 4)</li>
+<li><strong>unsigned</strong> &#8211; For 1 byte width, specifies signed or unsigned format.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises ValueError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first">when invalid <em>width</em></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">A <a class="reference internal" href="#pasampleformat"><em>PortAudio Sample Format</em></a> constant</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaudio.get_portaudio_version">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">get_portaudio_version</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.get_portaudio_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns portaudio version.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaudio.get_portaudio_version_text">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">get_portaudio_version_text</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.get_portaudio_version_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns PortAudio version as a text string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaudio.get_sample_size">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">get_sample_size</tt><big>(</big><em>format</em><big>)</big><a class="headerlink" href="#pyaudio.get_sample_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the size (in bytes) for the specified
+sample <em>format</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>format</strong> &#8211; A <a class="reference internal" href="#pasampleformat"><em>PortAudio Sample Format</em></a> constant.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises ValueError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">on invalid specified <cite>format</cite>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">integer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paAL">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paAL</tt><em class="property"> = 9</em><a class="headerlink" href="#pyaudio.paAL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open Audio Library</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paALSA">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paALSA</tt><em class="property"> = 8</em><a class="headerlink" href="#pyaudio.paALSA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Advanced Linux Sound Architecture (Linux only)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paASIO">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paASIO</tt><em class="property"> = 3</em><a class="headerlink" href="#pyaudio.paASIO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Steinberg Audio Stream Input/Output</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paAbort">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paAbort</tt><em class="property"> = 2</em><a class="headerlink" href="#pyaudio.paAbort" title="Permalink to this definition">¶</a></dt>
+<dd><p>An error ocurred, stop playback/recording</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paBeOS">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paBeOS</tt><em class="property"> = 10</em><a class="headerlink" href="#pyaudio.paBeOS" title="Permalink to this definition">¶</a></dt>
+<dd><p>BeOS Sound System</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paComplete">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paComplete</tt><em class="property"> = 1</em><a class="headerlink" href="#pyaudio.paComplete" title="Permalink to this definition">¶</a></dt>
+<dd><p>This was the last block of audio data</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paContinue">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paContinue</tt><em class="property"> = 0</em><a class="headerlink" href="#pyaudio.paContinue" title="Permalink to this definition">¶</a></dt>
+<dd><p>There is more audio data to come</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paCoreAudio">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paCoreAudio</tt><em class="property"> = 5</em><a class="headerlink" href="#pyaudio.paCoreAudio" title="Permalink to this definition">¶</a></dt>
+<dd><p>CoreAudio (OSX only)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paCustomFormat">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paCustomFormat</tt><em class="property"> = 65536</em><a class="headerlink" href="#pyaudio.paCustomFormat" title="Permalink to this definition">¶</a></dt>
+<dd><p>a custom data format</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paDirectSound">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paDirectSound</tt><em class="property"> = 1</em><a class="headerlink" href="#pyaudio.paDirectSound" title="Permalink to this definition">¶</a></dt>
+<dd><p>DirectSound (Windows only)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paFloat32">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paFloat32</tt><em class="property"> = 1</em><a class="headerlink" href="#pyaudio.paFloat32" title="Permalink to this definition">¶</a></dt>
+<dd><p>32 bit float</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paInDevelopment">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paInDevelopment</tt><em class="property"> = 0</em><a class="headerlink" href="#pyaudio.paInDevelopment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Still in development</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paInputOverflow">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paInputOverflow</tt><em class="property"> = 2</em><a class="headerlink" href="#pyaudio.paInputOverflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Buffer overflow in input</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paInputUnderflow">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paInputUnderflow</tt><em class="property"> = 1</em><a class="headerlink" href="#pyaudio.paInputUnderflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Buffer underflow in input</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paInt16">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paInt16</tt><em class="property"> = 8</em><a class="headerlink" href="#pyaudio.paInt16" title="Permalink to this definition">¶</a></dt>
+<dd><p>16 bit int</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paInt24">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paInt24</tt><em class="property"> = 4</em><a class="headerlink" href="#pyaudio.paInt24" title="Permalink to this definition">¶</a></dt>
+<dd><p>24 bit int</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paInt32">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paInt32</tt><em class="property"> = 2</em><a class="headerlink" href="#pyaudio.paInt32" title="Permalink to this definition">¶</a></dt>
+<dd><p>32 bit int</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paInt8">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paInt8</tt><em class="property"> = 16</em><a class="headerlink" href="#pyaudio.paInt8" title="Permalink to this definition">¶</a></dt>
+<dd><p>8 bit int</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paJACK">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paJACK</tt><em class="property"> = 12</em><a class="headerlink" href="#pyaudio.paJACK" title="Permalink to this definition">¶</a></dt>
+<dd><p>JACK Audio Connection Kit</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paMME">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paMME</tt><em class="property"> = 2</em><a class="headerlink" href="#pyaudio.paMME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multimedia Extension (Windows only)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paNoDevice">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paNoDevice</tt><em class="property"> = -1</em><a class="headerlink" href="#pyaudio.paNoDevice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not actually an audio device</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paOSS">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paOSS</tt><em class="property"> = 7</em><a class="headerlink" href="#pyaudio.paOSS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open Sound System (Linux only)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paOutputOverflow">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paOutputOverflow</tt><em class="property"> = 8</em><a class="headerlink" href="#pyaudio.paOutputOverflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Buffer overflow in output</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paOutputUnderflow">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paOutputUnderflow</tt><em class="property"> = 4</em><a class="headerlink" href="#pyaudio.paOutputUnderflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Buffer underflow in output</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paPrimingOutput">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paPrimingOutput</tt><em class="property"> = 16</em><a class="headerlink" href="#pyaudio.paPrimingOutput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Just priming, not playing yet</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paSoundManager">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paSoundManager</tt><em class="property"> = 4</em><a class="headerlink" href="#pyaudio.paSoundManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>SoundManager (OSX only)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paUInt8">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paUInt8</tt><em class="property"> = 32</em><a class="headerlink" href="#pyaudio.paUInt8" title="Permalink to this definition">¶</a></dt>
+<dd><p>8 bit unsigned int</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paWASAPI">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paWASAPI</tt><em class="property"> = 13</em><a class="headerlink" href="#pyaudio.paWASAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Windows Vista Audio stack architecture</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyaudio.paWDMKS">
+<tt class="descclassname">pyaudio.</tt><tt class="descname">paWDMKS</tt><em class="property"> = 11</em><a class="headerlink" href="#pyaudio.paWDMKS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Windows Driver Model (Windows only)</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="class-pyaudio">
+<h2><a class="toc-backref" href="#id7">Class PyAudio</a><a class="headerlink" href="#class-pyaudio" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyaudio.PyAudio">
+<em class="property">class </em><tt class="descclassname">pyaudio.</tt><tt class="descname">PyAudio</tt><a class="headerlink" href="#pyaudio.PyAudio" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Python interface to PortAudio. Provides methods to:</dt>
+<dd><ul class="first last simple">
+<li>initialize and terminate PortAudio</li>
+<li>open and close streams</li>
+<li>query and inspect the available PortAudio Host APIs</li>
+<li>query and inspect the available PortAudio audio
+devices</li>
+</ul>
+</dd>
+</dl>
+<p>Use this class to open and close streams.</p>
+<dl class="docutils">
+<dt><strong>Stream Management</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.PyAudio.open" title="pyaudio.PyAudio.open"><tt class="xref py py-func docutils literal"><span class="pre">open()</span></tt></a>, <a class="reference internal" href="#pyaudio.PyAudio.close" title="pyaudio.PyAudio.close"><tt class="xref py py-func docutils literal"><span class="pre">close()</span></tt></a></dd>
+<dt><strong>Host API</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.PyAudio.get_host_api_count" title="pyaudio.PyAudio.get_host_api_count"><tt class="xref py py-func docutils literal"><span class="pre">get_host_api_count()</span></tt></a>, <a class="reference internal" href="#pyaudio.PyAudio.get_default_host_api_info" title="pyaudio.PyAudio.get_default_host_api_info"><tt class="xref py py-func docutils literal"><span class="pre">get_default_host_api_info()</span></tt></a>,
+<a class="reference internal" href="#pyaudio.PyAudio.get_host_api_info_by_type" title="pyaudio.PyAudio.get_host_api_info_by_type"><tt class="xref py py-func docutils literal"><span class="pre">get_host_api_info_by_type()</span></tt></a>,
+<a class="reference internal" href="#pyaudio.PyAudio.get_host_api_info_by_index" title="pyaudio.PyAudio.get_host_api_info_by_index"><tt class="xref py py-func docutils literal"><span class="pre">get_host_api_info_by_index()</span></tt></a>,
+<a class="reference internal" href="#pyaudio.PyAudio.get_device_info_by_host_api_device_index" title="pyaudio.PyAudio.get_device_info_by_host_api_device_index"><tt class="xref py py-func docutils literal"><span class="pre">get_device_info_by_host_api_device_index()</span></tt></a></dd>
+<dt><strong>Device API</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.PyAudio.get_device_count" title="pyaudio.PyAudio.get_device_count"><tt class="xref py py-func docutils literal"><span class="pre">get_device_count()</span></tt></a>, <a class="reference internal" href="#pyaudio.PyAudio.is_format_supported" title="pyaudio.PyAudio.is_format_supported"><tt class="xref py py-func docutils literal"><span class="pre">is_format_supported()</span></tt></a>,
+<a class="reference internal" href="#pyaudio.PyAudio.get_default_input_device_info" title="pyaudio.PyAudio.get_default_input_device_info"><tt class="xref py py-func docutils literal"><span class="pre">get_default_input_device_info()</span></tt></a>,
+<a class="reference internal" href="#pyaudio.PyAudio.get_default_output_device_info" title="pyaudio.PyAudio.get_default_output_device_info"><tt class="xref py py-func docutils literal"><span class="pre">get_default_output_device_info()</span></tt></a>,
+<a class="reference internal" href="#pyaudio.PyAudio.get_device_info_by_index" title="pyaudio.PyAudio.get_device_info_by_index"><tt class="xref py py-func docutils literal"><span class="pre">get_device_info_by_index()</span></tt></a></dd>
+<dt><strong>Stream Format Conversion</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.get_sample_size" title="pyaudio.get_sample_size"><tt class="xref py py-func docutils literal"><span class="pre">get_sample_size()</span></tt></a>, <a class="reference internal" href="#pyaudio.get_format_from_width" title="pyaudio.get_format_from_width"><tt class="xref py py-func docutils literal"><span class="pre">get_format_from_width()</span></tt></a></dd>
+</dl>
+<p><strong>Details</strong></p>
+<dl class="method">
+<dt id="pyaudio.PyAudio.__init__">
+<tt class="descname">__init__</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize PortAudio.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.close">
+<tt class="descname">close</tt><big>(</big><em>stream</em><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close a stream. Typically use <a class="reference internal" href="#pyaudio.Stream.close" title="pyaudio.Stream.close"><tt class="xref py py-func docutils literal"><span class="pre">Stream.close()</span></tt></a> instead.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>stream</strong> &#8211; An instance of the <a class="reference internal" href="#pyaudio.Stream" title="pyaudio.Stream"><tt class="xref py py-class docutils literal"><span class="pre">Stream</span></tt></a> object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises ValueError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">if stream does not exist.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.get_default_host_api_info">
+<tt class="descname">get_default_host_api_info</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.get_default_host_api_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary containing the default Host API
+parameters. The keys of the dictionary mirror the data fields
+of PortAudio&#8217;s <tt class="docutils literal"><span class="pre">PaHostApiInfo</span></tt> structure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises IOError:</th><td class="field-body">if no default input device is available</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.get_default_input_device_info">
+<tt class="descname">get_default_input_device_info</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.get_default_input_device_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the default input Device parameters as a
+dictionary. The keys of the dictionary mirror the data fields
+of PortAudio&#8217;s <tt class="docutils literal"><span class="pre">PaDeviceInfo</span></tt> structure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises IOError:</th><td class="field-body">No default input device available.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.get_default_output_device_info">
+<tt class="descname">get_default_output_device_info</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.get_default_output_device_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the default output Device parameters as a
+dictionary. The keys of the dictionary mirror the data fields
+of PortAudio&#8217;s <tt class="docutils literal"><span class="pre">PaDeviceInfo</span></tt> structure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises IOError:</th><td class="field-body">No default output device available.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.get_device_count">
+<tt class="descname">get_device_count</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.get_device_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of PortAudio Host APIs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">integer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.get_device_info_by_host_api_device_index">
+<tt class="descname">get_device_info_by_host_api_device_index</tt><big>(</big><em>host_api_index</em>, <em>host_api_device_index</em><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.get_device_info_by_host_api_device_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary containing the Device parameters for a
+given Host API&#8217;s n&#8217;th device. The keys of the dictionary
+mirror the data fields of PortAudio&#8217;s <tt class="docutils literal"><span class="pre">PaDeviceInfo</span></tt> structure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>host_api_index</strong> &#8211; The Host API index number</li>
+<li><strong>host_api_device_index</strong> &#8211; The n&#8217;th device of the host API</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises IOError:</th><td class="field-body"><p class="first">for invalid indices</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.get_device_info_by_index">
+<tt class="descname">get_device_info_by_index</tt><big>(</big><em>device_index</em><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.get_device_info_by_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Device parameters for device specified in
+<cite>device_index</cite> as a dictionary. The keys of the dictionary
+mirror the data fields of PortAudio&#8217;s <tt class="docutils literal"><span class="pre">PaDeviceInfo</span></tt>
+structure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>device_index</strong> &#8211; The device index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises IOError:</th><td class="field-body">Invalid <cite>device_index</cite>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.get_format_from_width">
+<tt class="descname">get_format_from_width</tt><big>(</big><em>width</em>, <em>unsigned=True</em><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.get_format_from_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a PortAudio format constant for the specified <cite>width</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>width</strong> &#8211; The desired sample width in bytes (1, 2, 3, or 4)</li>
+<li><strong>unsigned</strong> &#8211; For 1 byte width, specifies signed or unsigned format.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises ValueError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first">for invalid <cite>width</cite></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">A <a class="reference internal" href="#pasampleformat"><em>PortAudio Sample Format</em></a> constant.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.get_host_api_count">
+<tt class="descname">get_host_api_count</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.get_host_api_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of available PortAudio Host APIs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">integer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.get_host_api_info_by_index">
+<tt class="descname">get_host_api_info_by_index</tt><big>(</big><em>host_api_index</em><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.get_host_api_info_by_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary containing the Host API parameters for the
+host API specified by the <cite>host_api_index</cite>. The keys of the
+dictionary mirror the data fields of PortAudio&#8217;s <tt class="docutils literal"><span class="pre">PaHostApiInfo</span></tt>
+structure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>host_api_index</strong> &#8211; The host api index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises IOError:</th><td class="field-body">for invalid <cite>host_api_index</cite></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.get_host_api_info_by_type">
+<tt class="descname">get_host_api_info_by_type</tt><big>(</big><em>host_api_type</em><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.get_host_api_info_by_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary containing the Host API parameters for the
+host API specified by the <cite>host_api_type</cite>. The keys of the
+dictionary mirror the data fields of PortAudio&#8217;s <tt class="docutils literal"><span class="pre">PaHostApiInfo</span></tt>
+structure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>host_api_type</strong> &#8211; The desired <a class="reference internal" href="#pahostapi"><em>PortAudio Host API</em></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises IOError:</th><td class="field-body">for invalid <cite>host_api_type</cite></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.get_sample_size">
+<tt class="descname">get_sample_size</tt><big>(</big><em>format</em><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.get_sample_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the size (in bytes) for the specified
+sample <cite>format</cite> (a <a class="reference internal" href="#pasampleformat"><em>PortAudio Sample Format</em></a> constant).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>format</strong> &#8211; A <a class="reference internal" href="#pasampleformat"><em>PortAudio Sample Format</em></a> constant.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises ValueError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">Invalid specified <cite>format</cite>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">integer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.is_format_supported">
+<tt class="descname">is_format_supported</tt><big>(</big><em>rate</em>, <em>input_device=None</em>, <em>input_channels=None</em>, <em>input_format=None</em>, <em>output_device=None</em>, <em>output_channels=None</em>, <em>output_format=None</em><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.is_format_supported" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check to see if specified device configuration
+is supported. Returns True if the configuration
+is supported; throws a ValueError exception otherwise.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rate</strong> &#8211; Specifies the desired rate (in Hz)</li>
+<li><strong>input_device</strong> &#8211; The input device index. Specify <tt class="docutils literal"><span class="pre">None</span></tt> (default) for
+half-duplex output-only streams.</li>
+<li><strong>input_channels</strong> &#8211; The desired number of input channels. Ignored if
+<cite>input_device</cite> is not specified (or <tt class="docutils literal"><span class="pre">None</span></tt>).</li>
+<li><strong>input_format</strong> &#8211; PortAudio sample format constant defined
+in this module</li>
+<li><strong>output_device</strong> &#8211; The output device index. Specify <tt class="docutils literal"><span class="pre">None</span></tt> (default) for
+half-duplex input-only streams.</li>
+<li><strong>output_channels</strong> &#8211; The desired number of output channels. Ignored if
+<cite>input_device</cite> is not specified (or <tt class="docutils literal"><span class="pre">None</span></tt>).</li>
+<li><strong>output_format</strong> &#8211; <a class="reference internal" href="#pasampleformat"><em>PortAudio Sample Format</em></a> constant.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">bool</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Raises ValueError:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first last">tuple containing (error string, <a class="reference internal" href="#paerrorcode"><em>PortAudio Error Code</em></a>).</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.open">
+<tt class="descname">open</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a new stream. See constructor for
+<a class="reference internal" href="#pyaudio.Stream.__init__" title="pyaudio.Stream.__init__"><tt class="xref py py-func docutils literal"><span class="pre">Stream.__init__()</span></tt></a> for parameter details.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A new <a class="reference internal" href="#pyaudio.Stream" title="pyaudio.Stream"><tt class="xref py py-class docutils literal"><span class="pre">Stream</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.PyAudio.terminate">
+<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.PyAudio.terminate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Terminate PortAudio.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Attention :</th><td class="field-body">Be sure to call this method for every instance of
+this object to release PortAudio resources.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="class-stream">
+<h2><a class="toc-backref" href="#id8">Class Stream</a><a class="headerlink" href="#class-stream" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyaudio.Stream">
+<em class="property">class </em><tt class="descclassname">pyaudio.</tt><tt class="descname">Stream</tt><big>(</big><em>PA_manager</em>, <em>rate</em>, <em>channels</em>, <em>format</em>, <em>input=False</em>, <em>output=False</em>, <em>input_device_index=None</em>, <em>output_device_index=None</em>, <em>frames_per_buffer=1024</em>, <em>start=True</em>, <em>input_host_api_specific_stream_info=None</em>, <em>output_host_api_specific_stream_info=None</em>, <em>stream_callback=None</em><big>)</big><a class="headerlink" href="#pyaudio.Stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>PortAudio Stream Wrapper. Use <a class="reference internal" href="#pyaudio.PyAudio.open" title="pyaudio.PyAudio.open"><tt class="xref py py-func docutils literal"><span class="pre">PyAudio.open()</span></tt></a> to make a new
+<a class="reference internal" href="#pyaudio.Stream" title="pyaudio.Stream"><tt class="xref py py-class docutils literal"><span class="pre">Stream</span></tt></a>.</p>
+<dl class="docutils">
+<dt><strong>Opening and Closing</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.Stream.__init__" title="pyaudio.Stream.__init__"><tt class="xref py py-func docutils literal"><span class="pre">__init__()</span></tt></a>, <a class="reference internal" href="#pyaudio.Stream.close" title="pyaudio.Stream.close"><tt class="xref py py-func docutils literal"><span class="pre">close()</span></tt></a></dd>
+<dt><strong>Stream Info</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.Stream.get_input_latency" title="pyaudio.Stream.get_input_latency"><tt class="xref py py-func docutils literal"><span class="pre">get_input_latency()</span></tt></a>, <a class="reference internal" href="#pyaudio.Stream.get_output_latency" title="pyaudio.Stream.get_output_latency"><tt class="xref py py-func docutils literal"><span class="pre">get_output_latency()</span></tt></a>,
+<a class="reference internal" href="#pyaudio.Stream.get_time" title="pyaudio.Stream.get_time"><tt class="xref py py-func docutils literal"><span class="pre">get_time()</span></tt></a>, <a class="reference internal" href="#pyaudio.Stream.get_cpu_load" title="pyaudio.Stream.get_cpu_load"><tt class="xref py py-func docutils literal"><span class="pre">get_cpu_load()</span></tt></a></dd>
+<dt><strong>Stream Management</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.Stream.start_stream" title="pyaudio.Stream.start_stream"><tt class="xref py py-func docutils literal"><span class="pre">start_stream()</span></tt></a>, <a class="reference internal" href="#pyaudio.Stream.stop_stream" title="pyaudio.Stream.stop_stream"><tt class="xref py py-func docutils literal"><span class="pre">stop_stream()</span></tt></a>, <a class="reference internal" href="#pyaudio.Stream.is_active" title="pyaudio.Stream.is_active"><tt class="xref py py-func docutils literal"><span class="pre">is_active()</span></tt></a>,
+<a class="reference internal" href="#pyaudio.Stream.is_stopped" title="pyaudio.Stream.is_stopped"><tt class="xref py py-func docutils literal"><span class="pre">is_stopped()</span></tt></a></dd>
+<dt><strong>Input Output</strong></dt>
+<dd><a class="reference internal" href="#pyaudio.Stream.write" title="pyaudio.Stream.write"><tt class="xref py py-func docutils literal"><span class="pre">write()</span></tt></a>, <a class="reference internal" href="#pyaudio.Stream.read" title="pyaudio.Stream.read"><tt class="xref py py-func docutils literal"><span class="pre">read()</span></tt></a>, <a class="reference internal" href="#pyaudio.Stream.get_read_available" title="pyaudio.Stream.get_read_available"><tt class="xref py py-func docutils literal"><span class="pre">get_read_available()</span></tt></a>,
+<a class="reference internal" href="#pyaudio.Stream.get_write_available" title="pyaudio.Stream.get_write_available"><tt class="xref py py-func docutils literal"><span class="pre">get_write_available()</span></tt></a></dd>
+</dl>
+<dl class="method">
+<dt id="pyaudio.Stream.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>PA_manager</em>, <em>rate</em>, <em>channels</em>, <em>format</em>, <em>input=False</em>, <em>output=False</em>, <em>input_device_index=None</em>, <em>output_device_index=None</em>, <em>frames_per_buffer=1024</em>, <em>start=True</em>, <em>input_host_api_specific_stream_info=None</em>, <em>output_host_api_specific_stream_info=None</em>, <em>stream_callback=None</em><big>)</big><a class="headerlink" href="#pyaudio.Stream.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a stream; this should be called by
+<a class="reference internal" href="#pyaudio.PyAudio.open" title="pyaudio.PyAudio.open"><tt class="xref py py-func docutils literal"><span class="pre">PyAudio.open()</span></tt></a>. A stream can either be input, output,
+or both.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>PA_manager</strong> &#8211; A reference to the managing <a class="reference internal" href="#pyaudio.PyAudio" title="pyaudio.PyAudio"><tt class="xref py py-class docutils literal"><span class="pre">PyAudio</span></tt></a>
+instance</li>
+<li><strong>rate</strong> &#8211; Sampling rate</li>
+<li><strong>channels</strong> &#8211; Number of channels</li>
+<li><strong>format</strong> &#8211; Sampling size and format. See <a class="reference internal" href="#pasampleformat"><em>PortAudio Sample Format</em></a>.</li>
+<li><strong>input</strong> &#8211; Specifies whether this is an input stream.
+Defaults to <tt class="docutils literal"><span class="pre">False</span></tt>.</li>
+<li><strong>output</strong> &#8211; Specifies whether this is an output stream.
+Defaults to <tt class="docutils literal"><span class="pre">False</span></tt>.</li>
+<li><strong>input_device_index</strong> &#8211; Index of Input Device to use.
+Unspecified (or <tt class="docutils literal"><span class="pre">None</span></tt>) uses default device.
+Ignored if <cite>input</cite> is <tt class="docutils literal"><span class="pre">False</span></tt>.</li>
+<li><strong>output_device_index</strong> &#8211; Index of Output Device to use.
+Unspecified (or <tt class="docutils literal"><span class="pre">None</span></tt>) uses the default device.
+Ignored if <cite>output</cite> is <tt class="docutils literal"><span class="pre">False</span></tt>.</li>
+<li><strong>frames_per_buffer</strong> &#8211; Specifies the number of frames per buffer.</li>
+<li><strong>start</strong> &#8211; Start the stream running immediately.
+Defaults to <tt class="docutils literal"><span class="pre">True</span></tt>. In general, there is no reason to set
+this to <tt class="docutils literal"><span class="pre">False</span></tt>.</li>
+<li><strong>input_host_api_specific_stream_info</strong> &#8211; <p>Specifies a host API
+specific stream information data structure for input.</p>
+</li>
+<li><strong>output_host_api_specific_stream_info</strong> &#8211; <p>Specifies a host API
+specific stream information data structure for output.</p>
+</li>
+<li><strong>stream_callback</strong> &#8211; <p>Specifies a callback function for
+<em>non-blocking</em> (callback) operation.  Default is
+<tt class="docutils literal"><span class="pre">None</span></tt>, which indicates <em>blocking</em> operation (i.e.,
+<a class="reference internal" href="#pyaudio.Stream.read" title="pyaudio.Stream.read"><tt class="xref py py-func docutils literal"><span class="pre">Stream.read()</span></tt></a> and <a class="reference internal" href="#pyaudio.Stream.write" title="pyaudio.Stream.write"><tt class="xref py py-func docutils literal"><span class="pre">Stream.write()</span></tt></a>).  To use
+non-blocking operation, specify a callback that conforms
+to the following signature:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">callback</span><span class="p">(</span><span class="n">in_data</span><span class="p">,</span>      <span class="c"># recorded data if input=True; else None</span>
+         <span class="n">frame_count</span><span class="p">,</span>  <span class="c"># number of frames</span>
+         <span class="n">time_info</span><span class="p">,</span>    <span class="c"># dictionary</span>
+         <span class="n">status_flags</span><span class="p">)</span> <span class="c"># PaCallbackFlags</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">time_info</span></tt> is a dictionary with the following keys:
+<tt class="docutils literal"><span class="pre">input_buffer_adc_time</span></tt>, <tt class="docutils literal"><span class="pre">current_time</span></tt>, and
+<tt class="docutils literal"><span class="pre">output_buffer_dac_time</span></tt>; see the PortAudio
+documentation for their meanings.  <tt class="docutils literal"><span class="pre">status_flags</span></tt> is one
+of <a class="reference internal" href="#pacallbackflags"><em>PortAutio Callback Flag</em></a>.</p>
+<p>The callback must return a tuple:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="n">out_data</span><span class="p">,</span> <span class="n">flag</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">out_data</span></tt> is a byte array whose length should be the
+(<tt class="docutils literal"><span class="pre">frame_count</span> <span class="pre">*</span> <span class="pre">channels</span> <span class="pre">*</span> <span class="pre">bytes-per-channel</span></tt>) if
+<tt class="docutils literal"><span class="pre">output=True</span></tt> or <tt class="docutils literal"><span class="pre">None</span></tt> if <tt class="docutils literal"><span class="pre">output=False</span></tt>.  <tt class="docutils literal"><span class="pre">flag</span></tt>
+must be either <a class="reference internal" href="#pyaudio.paContinue" title="pyaudio.paContinue"><tt class="xref py py-data docutils literal"><span class="pre">paContinue</span></tt></a>, <a class="reference internal" href="#pyaudio.paComplete" title="pyaudio.paComplete"><tt class="xref py py-data docutils literal"><span class="pre">paComplete</span></tt></a> or
+<a class="reference internal" href="#pyaudio.paAbort" title="pyaudio.paAbort"><tt class="xref py py-data docutils literal"><span class="pre">paAbort</span></tt></a> (one of <a class="reference internal" href="#pacallbackreturncodes"><em>PortAudio Callback Return Code</em></a>).
+When <tt class="docutils literal"><span class="pre">output=True</span></tt> and <tt class="docutils literal"><span class="pre">out_data</span></tt> does not contain at
+least <tt class="docutils literal"><span class="pre">frame_count</span></tt> frames, <a class="reference internal" href="#pyaudio.paComplete" title="pyaudio.paComplete"><tt class="xref py py-data docutils literal"><span class="pre">paComplete</span></tt></a> is
+assumed for <tt class="docutils literal"><span class="pre">flag</span></tt>.</p>
+<p><strong>Note:</strong> <tt class="docutils literal"><span class="pre">stream_callback</span></tt> is called in a separate
+thread (from the main thread).  Exceptions that occur in
+the <tt class="docutils literal"><span class="pre">stream_callback</span></tt> will:</p>
+<ol class="arabic">
+<li>print a traceback on standard error to aid debugging,</li>
+<li>queue the exception to be thrown (at some point) in
+the main thread, and</li>
+<li>return <cite>paAbort</cite> to PortAudio to stop the stream.</li>
+</ol>
+<p><strong>Note:</strong> Do not call <a class="reference internal" href="#pyaudio.Stream.read" title="pyaudio.Stream.read"><tt class="xref py py-func docutils literal"><span class="pre">Stream.read()</span></tt></a> or
+<a class="reference internal" href="#pyaudio.Stream.write" title="pyaudio.Stream.write"><tt class="xref py py-func docutils literal"><span class="pre">Stream.write()</span></tt></a> if using non-blocking operation.</p>
+<p><strong>See:</strong> PortAudio&#8217;s callback signature for additional
+details: <a class="reference external" href="http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a8a60fb2a5ec9cbade3f54a9c978e2710">http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a8a60fb2a5ec9cbade3f54a9c978e2710</a></p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises ValueError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">Neither input nor output are set True.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.Stream.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the stream</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.get_cpu_load">
+<tt class="descname">get_cpu_load</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.Stream.get_cpu_load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the CPU load.  This is always 0.0 for the
+blocking API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.get_input_latency">
+<tt class="descname">get_input_latency</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.Stream.get_input_latency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the input latency.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.get_output_latency">
+<tt class="descname">get_output_latency</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.Stream.get_output_latency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the input latency.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.get_read_available">
+<tt class="descname">get_read_available</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.Stream.get_read_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of frames that can be read without waiting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">integer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.get_time">
+<tt class="descname">get_time</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.Stream.get_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return stream time.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.get_write_available">
+<tt class="descname">get_write_available</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.Stream.get_write_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of frames that can be written without
+waiting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">integer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.is_active">
+<tt class="descname">is_active</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.Stream.is_active" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether the stream is active.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.is_stopped">
+<tt class="descname">is_stopped</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.Stream.is_stopped" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether the stream is stopped.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.read">
+<tt class="descname">read</tt><big>(</big><em>num_frames</em><big>)</big><a class="headerlink" href="#pyaudio.Stream.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read samples from the stream.  Do not call when using
+<em>non-blocking</em> mode.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num_frames</strong> &#8211; The number of frames to read.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises IOError:</th><td class="field-body">if stream is not an input stream
+or if the read operation was unsuccessful.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.start_stream">
+<tt class="descname">start_stream</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.Stream.start_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the stream.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.stop_stream">
+<tt class="descname">stop_stream</tt><big>(</big><big>)</big><a class="headerlink" href="#pyaudio.Stream.stop_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the stream. Once the stream is stopped, one may not call
+write or read.  Call <a class="reference internal" href="#pyaudio.Stream.start_stream" title="pyaudio.Stream.start_stream"><tt class="xref py py-func docutils literal"><span class="pre">start_stream()</span></tt></a> to resume the
+stream.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaudio.Stream.write">
+<tt class="descname">write</tt><big>(</big><em>frames</em>, <em>num_frames=None</em>, <em>exception_on_underflow=False</em><big>)</big><a class="headerlink" href="#pyaudio.Stream.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write samples to the stream.  Do not call when using
+<em>non-blocking</em> mode.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frames</strong> &#8211; The frames of data.</li>
+<li><strong>num_frames</strong> &#8211; The number of frames to write.
+Defaults to None, in which this value will be
+automatically computed.</li>
+<li><strong>exception_on_underflow</strong> &#8211; Specifies whether an exception should be thrown
+(or silently ignored) on buffer underflow. Defaults
+to False for improved performance, especially on
+slower platforms.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises IOError:</th><td class="field-body"><p class="first">if the stream is not an output stream
+or if the write operation was unsuccessful.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><cite>None</cite></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="platform-specific">
+<h2><a class="toc-backref" href="#id9">Platform Specific</a><a class="headerlink" href="#platform-specific" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1><a class="toc-backref" href="#id10">Indices and tables</a><a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">PyAudio 0.2.8 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Hubert Pham.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

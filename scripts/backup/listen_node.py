@@ -4,14 +4,11 @@ from struct import pack
 import rospy
 from std_msgs.msg import String
 
-import audioop
 import pyaudio
 import wave
 from subprocess import call
 
-THRESHOLD = 10000
-#THRESHOLD = 5000
-#CHUNK_SIZE = 10
+THRESHOLD = 5000
 CHUNK_SIZE = 1024
 FORMAT = pyaudio.paInt16
 RATE = 16000
@@ -28,7 +25,7 @@ def is_silent(snd_data):
     val = m - n
     if (val > maxval):
 	maxval = val 
-    return val< THRESHOLD
+    return val < THRESHOLD
 
 def record():
     """
@@ -36,13 +33,10 @@ def record():
     return the data as an array of signed shorts.
     """
     p = pyaudio.PyAudio()
-
     stream = p.open(format=FORMAT, channels=1, rate=RATE,
         input=True,#output=True,
         frames_per_buffer=CHUNK_SIZE, input_device_index=2)
-    data = stream.read(CHUNK_SIZE)
-    rms = audioop.rms(data, 2)
-    print "rms=", rms
+
     num_silent = 0
     snd_started = False
 
@@ -57,16 +51,14 @@ def record():
 		if byteorder == 'big':
 		    snd_data.byteswap()
 		r.extend(snd_data)
-		#import pdb; pdb.set_trace()
+
 		silent = is_silent(snd_data)
-		#print "silent = ", silent
 
 		if silent and snd_started:
 		    num_silent += 1
 		elif not silent and not snd_started:
 		    snd_started = True
 
-		#import pdb; pdb.set_trace()
 		if snd_started and num_silent > 30:
 		    break
 
@@ -113,6 +105,6 @@ if __name__ == '__main__':
 	call(["./speech2text.sh"])
 	with open("stt.txt") as f:
 	    text = f.read()
-	    if text != "\n" or text != "":
+	    if text != "":
 		publisher.publish(text)
 
