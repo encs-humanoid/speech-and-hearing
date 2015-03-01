@@ -1,18 +1,15 @@
-#!/usr/bin/python
 from sys import byteorder
 from array import array
 from struct import pack
+from time import sleep
 import rospy
 from std_msgs.msg import String
 
-import audioop
 import pyaudio
 import wave
 from subprocess import call
 
-THRESHOLD = 10000
-#THRESHOLD = 5000
-#CHUNK_SIZE = 10
+THRESHOLD = 5000
 CHUNK_SIZE = 1024
 FORMAT = pyaudio.paInt16
 RATE = 16000
@@ -29,47 +26,53 @@ def is_silent(snd_data):
     val = m - n
     if (val > maxval):
 	maxval = val 
-    return val< THRESHOLD
+    return val < THRESHOLD
 
 def record():
     """
     Record a word or words from the microphone and 
     return the data as an array of signed shorts.
     """
+    global is_listening
     p = pyaudio.PyAudio()
+    #stream = p.open(format=FORMAT, channels=1, rate=RATE,
+     #   input=True,#output=True,
+     #   frames_per_buffer=CHUNK_SIZE, input_device_index=2)
 
-    stream = p.open(format=FORMAT, channels=1, rate=RATE,
-        input=True,#output=True,
-        frames_per_buffer=CHUNK_SIZE, input_device_index=2)
-    data = stream.read(CHUNK_SIZE)
-    rms = audioop.rms(data, 2)
-    print "rms=", rms
     num_silent = 0
     snd_started = False
-
+    stream_flag = False
     r = array('h')
 
     rate = rospy.Rate(44100) # 44100 Hz - not a meaningful frequency, just a small delay
     while 1:
 	rate.sleep() # give ROS a chance to run
+	# little endian, signed short
+	
+	#p = pyaudio.PyAudio()
+	if not stream_flag:
+		stream = p.open(format=FORMAT, channels=1, rate=RATE,
+		input=True,#output=True,
+		frames_per_buffer=CHUNK_SIZE, input_device_index=2)
+		stream_flag = True
+		r = [ ]
+	#frame_number = stream.get_read_available()
+	#print frame_number
+
+	snd_data = array('h', stream.read(CHUNK_SIZE))
 	if is_listening:
-		# little endian, signed short
-		snd_data = array('h', stream.read(CHUNK_SIZE))
 		if byteorder == 'big':
 		    snd_data.byteswap()
 		r.extend(snd_data)
-		#import pdb; pdb.set_trace()
 		silent = is_silent(snd_data)
-		#print "silent = ", silent
 
 		if silent and snd_started:
 		    num_silent += 1
 		elif not silent and not snd_started:
 		    snd_started = True
 
-		#import pdb; pdb.set_trace()
 		if snd_started and num_silent > 30:
-		    break
+			break
 
     sample_width = p.get_sample_size(FORMAT)
     stream.stop_stream()
@@ -91,6 +94,7 @@ def record_to_file(path):
     wf.close()
 
 def on_speech_info(msg):
+    global is_listening
     if msg.data == "start_speaking":
 	is_listening = False
         rospy.loginfo(rospy.get_caller_id() + ": stop listening")
@@ -109,11 +113,12 @@ if __name__ == '__main__':
 
     while True:
 	print("please speak a word into the microphone")
+	#print is_listening
 	record_to_file('demo.wav')
 	print("done - result written to demo.wav")
 	call(["./speech2text.sh"])
 	with open("stt.txt") as f:
 	    text = f.read()
-	    if text != "\n" or text != "":
+	    if text != "":
 		publisher.publish(text)
 

@@ -13,11 +13,11 @@ apikey=`cat apikey.txt | xargs`
 
 # call Google Speech API to recognize what was spoken
 wget -q -U "Mozilla/5.0" --post-file file.flac --header "Content-Type: audio/x-flac; rate=16000" -O - "http://www.google.com/speech-api/v2/recognize?lang=en-us&client=chromium&key=${apikey}" | cut -d\" -f8 > stt.txt 
-
+#aplay demo.wav
 value=`cat stt.txt`
 echo "You Said:"
 echo "$value"
-
+rm demo.wav
 #if [ -n "$value" ]; then
 #    rostopic pub recognized_speech std_msgs/String -1 "$value"
 #fi
