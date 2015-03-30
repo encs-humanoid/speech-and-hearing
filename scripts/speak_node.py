@@ -2,6 +2,7 @@
 import rospy
 from std_msgs.msg import String
 from subprocess import call
+from pipes import quote
 from time import sleep
 
 # Produce audible English speech given a text string.
@@ -16,7 +17,7 @@ from time import sleep
 def on_say(msg):
     publisher.publish("start_speaking")
     sleep(0.5)
-    call(["espeak", "-v", "english-us", "-s", "140", "-p", "80", "-g", "2", msg.data])
+    call(["espeak -v english-us -s 140 -p 80 -g 2 " + quote(msg.data) + " --stdout | aplay"], shell=True)
     publisher.publish("done_speaking")
 
 # Intializes everything
