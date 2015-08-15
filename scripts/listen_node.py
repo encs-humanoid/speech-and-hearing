@@ -38,11 +38,27 @@ class ListenerThread(threading.Thread):
 	global shutdown
 
 	input_device = 6
-	rospy.loginfo(rospy.get_caller_id() + ": starting audio listener for input device " + str(input_device))
-
+	num_retries = 10
+	time.sleep(5)  # try to prevent crash when starting at boot
 	self.p = pyaudio.PyAudio()
-	self.stream = self.p.open(format=FORMAT, channels=1, rate=RATE, input=True,
-				  frames_per_buffer=CHUNK_SIZE, input_device_index=input_device)
+	# attempt to connect to the audio stream.  on startup, this may
+	# initially fail, so retry a few times
+	for num_tries in range(num_retries):
+	    try:
+		rospy.loginfo(rospy.get_caller_id() + ": starting audio listener for input device " + str(input_device) + " try " + str(num_tries + 1))
+
+		self.stream = None
+		self.stream = self.p.open(format=FORMAT, channels=1, rate=RATE, input=True,
+					  frames_per_buffer=CHUNK_SIZE, input_device_index=input_device)
+		break
+	    except:
+		traceback.print_exc()
+		time.sleep(1)
+
+	if self.stream is None:
+	    rospy.loginfo(rospy.get_caller_id() + ": failed to start audio listener for input device " + str(input_device) + " after " + str(num_retries) + " tries")
+	    exit(1)
+
 	while not shutdown:
 	    # determine speech segment from input audio
 	    # store last speech segment recorded while listening
@@ -162,7 +178,7 @@ if __name__ == '__main__':
     rospy.init_node('listen_node')
     rospy.Subscriber("speech_info", String, on_speech_info)
     rospy.Subscriber("listen_control", String, on_listen_control)
-    publisher = rospy.Publisher("recognized_speech", String)
+    publisher = rospy.Publisher("recognized_speech", String, queue_size=1)
 
     # initialize a thread to read and segment audio from the mic
     # the thread should read continuously to avoid input buffer overflow on the audio stream
