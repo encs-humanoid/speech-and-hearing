@@ -17,10 +17,12 @@ CHUNK_SIZE = 1024
 FORMAT = pyaudio.paInt16
 RATE = 16000
 
+
 class Segment(object):
     def __init__(self, sample_width, data):
 	self.sample_width = sample_width
 	self.data = data
+
 
 class ListenerThread(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, verbose=None):
@@ -101,6 +103,7 @@ class ListenerThread(threading.Thread):
 
 	return sample_width, r
 
+
 def record_to_file(segment, path):
     "Write the speech segment data in WAV format to 'path'"
     max_sound_samples = 200000  # TODO make this into a node parameter
@@ -121,23 +124,44 @@ def record_to_file(segment, path):
     wf.close()
     rospy.loginfo(rospy.get_caller_id() + ": wrote " + str(len(data)) + " bytes to " + path)
 
+
 def on_speech_info(msg):
-    global is_listening
+    global is_listening, listening_enabled
     if msg.data == "start_speaking":
 	is_listening = False
-        rospy.loginfo(rospy.get_caller_id() + ": stop listening")
+        rospy.loginfo(rospy.get_caller_id() + ": start speaking")
     elif msg.data == "done_speaking":
-	is_listening = True
-        rospy.loginfo(rospy.get_caller_id() + ": resume listening")
+	is_listening = listening_enabled
+        rospy.loginfo(rospy.get_caller_id() + ": done speaking")
     else:
         rospy.loginfo(rospy.get_caller_id() + ": unrecognised speech_info message %s", msg.data)
 
+
+# listen control is separate from speech info handling to allow a mechanism
+# to turn off listening without interfering with other speech processes
+def on_listen_control(msg):
+    global is_listening, listening_enabled, publisher
+    if msg.data == "stop_listening":
+	listening_enabled = False
+	publisher.publish("KEN STOP LISTENING")
+	rospy.loginfo(rospy.get_caller_id() + ": stop listening")
+    elif msg.data == "resume_listening":
+	listening_enabled = True
+	publisher.publish("KEN RESUME LISTENING")
+	rospy.loginfo(rospy.get_caller_id() + ": resume listening")
+    else:
+	rospy.loginfo(rospy.get_caller_id() + ": unrecognised listen_control message %s", msg.data)
+    is_listening = listening_enabled
+
+
 if __name__ == '__main__':
-    global is_listening, shutdown
+    global is_listening, listening_enabled, publisher, shutdown
     is_listening = True
+    listening_enabled = True
     shutdown = False
     rospy.init_node('listen_node')
     rospy.Subscriber("speech_info", String, on_speech_info)
+    rospy.Subscriber("listen_control", String, on_listen_control)
     publisher = rospy.Publisher("recognized_speech", String)
 
     # initialize a thread to read and segment audio from the mic
