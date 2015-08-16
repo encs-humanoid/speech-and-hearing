@@ -17,7 +17,7 @@ wget -q -U "Mozilla/5.0" --post-file file.flac --header "Content-Type: audio/x-f
 value=`cat stt.txt`
 echo "You Said:"
 echo "$value"
-rm demo.wav
+mv demo.wav demo_old.wav
 #if [ -n "$value" ]; then
 #    rostopic pub recognized_speech std_msgs/String -1 "$value"
 #fi
