@@ -83,7 +83,7 @@ class ListenerThread(threading.Thread):
 
     def run(self):
     	global FORMAT, CHUNK_SIZE, RATE
-	num_retries = 10
+	num_retries = 30
 	time.sleep(5)  # try to prevent crash when starting at boot
 	self.p = pyaudio.PyAudio()
 	# attempt to connect to the audio stream.  on startup, this may
@@ -277,15 +277,13 @@ class ListenNode(object):
 	self.listener.start()
 
 	try:
-	    rospy.loginfo('in main thread')
+	    rospy.loginfo('starting main loop')
 	    rate = rospy.Rate(10)
-	    while True:
+	    while not rospy.is_shutdown():
 	    	segment = self.listener.pop_last_segment()
 		if segment is not None:
 		    self.publish_speech_segment(segment)
 		rate.sleep() # give ROS a chance to run
-	except KeyboardInterrupt:
-	    pass
 	except:
 	    traceback.print_exc()
 
