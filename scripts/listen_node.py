@@ -64,11 +64,12 @@ class Segment(object):
 
 
 class ListenerThread(threading.Thread):
-    def __init__(self, input_device, group=None, target=None, name=None, args=(), kwargs=None, verbose=None):
+    def __init__(self, input_device, max_sound_samples, group=None, target=None, name=None, args=(), kwargs=None, verbose=None):
 	threading.Thread.__init__(self, group=group, target=target, name=name, verbose=verbose)
         self.args = args
         self.kwargs = kwargs
 	self.input_device = input_device
+	self.max_sound_samples = max_sound_samples
 	self.p = None  # initialized in run()
 	self.stream = None  # initialized in run()
 	self.last_segment = None
@@ -196,7 +197,7 @@ class ListenerThread(threading.Thread):
 	    d = collections.deque(maxlen=start_num_silent_frames)
 	    r = array('h')
 
-	    while not self.is_shutdown:
+	    while not self.is_shutdown and len(r) < self.max_sound_samples:
 		# little endian, signed short
 		snd_data = array('h', self.stream.read(CHUNK_SIZE))
 		if self.is_listening:
@@ -261,7 +262,7 @@ class ListenNode(object):
 	rospy.Subscriber(speech_info_topic, String, self.on_speech_info)
 	rospy.Subscriber(control_topic, String, self.on_listen_control)
 	self.publisher = rospy.Publisher(speech_topic, String, queue_size=1)
-	self.listener = ListenerThread(device)
+	self.listener = ListenerThread(device, self.max_sound_samples)
 
 
     def get_param(self, param_name, param_default):
