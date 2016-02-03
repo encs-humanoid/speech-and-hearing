@@ -23,11 +23,11 @@ def on_say(msg):
 # Intializes everything
 def start():
     global publisher
+    # starts the node
+    rospy.init_node('speak_node')
     # subscribed to text inputs on topic "speech"
     rospy.Subscriber("say", String, on_say)
     publisher = rospy.Publisher("speech_info", String)
-    # starts the node
-    rospy.init_node('speak_node')
     rospy.spin()
 
 if __name__ == '__main__':
