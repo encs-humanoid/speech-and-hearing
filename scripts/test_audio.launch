@@ -1,0 +1,8 @@
+<launch>
+
+	<node name="listen_node" pkg="speech-and-hearing" type="listen_node.py" cwd="node"/>
+	<node name="ai_respond_node" pkg="ai" type="ai_respond_node.py" cwd="node"/>
+	<node name="speak_node" pkg="speech-and-hearing" type="speak_node.py"/>
+
+</launch>
+
